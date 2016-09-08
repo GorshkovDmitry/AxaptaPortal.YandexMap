@@ -1,0 +1,95 @@
+/*Global styles*/
+.clear
+{
+	clear:both;
+}
+
+
+/*Main styles*/
+#wrapper
+{
+	position:relative;
+	margin:20px auto 0;
+	width:1240px;
+	border:1px solid #aaa;
+	background:#ebeced;
+}
+
+#map
+{
+	float:left;
+	width:1000px;
+	height:800px;
+}
+
+
+.column-right
+{
+	float:left;
+	margin:0 10px 0;
+	width:220px;
+}
+
+
+/*Right column styles*/
+.column-right .block, .column-right .block-bottom
+{
+	border:1px solid #888;
+	padding-left:5px;
+}
+
+.column-right .block
+{
+	margin:10px 0 0;
+}
+
+.column-right .block-bottom
+{
+	position:absolute;
+	right:10px;
+	bottom:10px;
+	width:215px;
+}
+
+.column-right h2
+{
+	font-size:18px;
+	margin:5px 10px 5px;
+}
+
+.column-right p
+{
+	margin:5px 5px 0;
+}
+
+.column-right input.input-text, .column-right div.panel
+{
+	width:202px;
+}
+
+.column-right select.input-select
+{
+	width:208px;
+}
+
+.column-right button.input-button
+{
+	margin:5px 0 5px;
+	/*width:102px;  02.03.2016, GorDS */
+	width:205px; /* 02.03.2016, GorDS */
+}
+
+.column-right #poligon-options
+{
+	display:none;
+}
+
+.column-right #poligon-options-set /* 02.03.2016, GorDS */ 
+{
+	width:130px;
+}
+
+.column-right #poligon-add /* 02.03.2016, GorDS */ 
+{
+	width:205px;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>Map constructor</title>
+	<link href="css/all.css" rel="stylesheet" type="text/css" />
+	<link href="css/colpick.css" rel="stylesheet" type="text/css" />
+	
+	<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+	<script src="js/colpick.js" type="text/javascript"></script>
+	<script src="http://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+	<script src="js/script.js" type="text/javascript"></script>
+	
+	<meta name="robots" content="noindex, nofollow" />
+</head>
+
+<body>
+	<div id="wrapper">
+		<div id="map"></div>
+		<div class="column-right">
+			<div class="block">
+				<h2>Зоны:</h2>
+				
+				<select id="poligon-select" class="input-select" onchange="choosePoligon();">
+					<option value="0" selected="selected">Не выбрано</option>
+				</select>
+				<button id="poligon-add" class="input-button" onclick="addPoligon();return false;">Добавить</button>
+				<button id="poligon-del" class="input-button" onclick="deletePoligon();return false;">Удалить</button>
+			</div>
+			
+			<div id="poligon-options" class="block">
+				<h2>Свойства зоны:</h2>
+
+				<p>Имя зоны:</p>
+				<input id="poligon-name" class="input-text" value="" type="text" disabled="disabled" />
+				
+				<p>Цвет заливки:</p>
+				<div id="poligon-color" class="panel"></div>
+				<button id="poligon-options-set" class="input-button" onclick="setPoligonOptions();return false;" disabled="disabled">Сохранить</button>
+			</div>
+			
+			<div class="block-bottom">
+				<h2>Сохранение\Загрузка:</h2>
+				
+				<p>Код завода:</p>
+				<input id="factory-name" class="input-text" value="" type="text" />
+				
+				<button id="factory-save" class="input-button" onclick="saveFactory();return false;" >Сохранить</button>
+				<button id="factory-load" class="input-button" onclick="loadFactory();return false;" >Загрузить</button>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</body>
+</html>
