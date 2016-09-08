@@ -1,0 +1,36 @@
+/*Global styles*/
+.clear
+{
+	clear:both;
+}
+
+/*Main styles*/
+
+#zoneSelectDiv
+{
+	position:relative;
+}
+
+#wrapper
+{
+	max-width:600px;
+	height:400px;
+	border:1px solid #aaa;
+	background:#ebeced;
+}
+
+#map
+{
+	height:400px;
+}
+
+#MainContent_zoneId
+{
+    display:none;
+}
+
+#MainContent_zoneString
+{
+    display:none;
+}
+
