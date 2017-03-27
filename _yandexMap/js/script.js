@@ -4,6 +4,7 @@
 
 //Html DOM constants
 var POLIGON_SELECT_ID = "#poligon-select";
+var POLIGON_PART_ID = "#poligon-part";		//task21501 Область зоны 16.09.2016, GorDS
 var POLIGON_OPTIONS_ID = "#poligon-options";
 var POLIGON_NAME_ID = "#poligon-name";
 var POLIGON_COLOR_ID = "#poligon-color";
@@ -103,12 +104,14 @@ function addPoligon()
     }, {
 		fillColor: colorCurrent,
 		fillOpacity: 0.2,
-		strokeColor: '#000'
+		strokeColor: '#000' 
 	});
     map.geoObjects.add(poligon);
     poligon.editor.startDrawing();
 	poligons[poligonNextId] = poligon;
 	
+	removePoligonSelectPart(); 				//task21501 Удаление областей зоны 16.09.2016, GorDS
+	addPoligonPartToControl(poligonName); 	//task21501 Добавление областей зоны (у зоны может быть несколько областей) 16.09.2016, GorDS
 	controlsPoligon();
 }
 
@@ -128,6 +131,9 @@ function clearMap() //Очистка карты 02.03.2016, GorDS
          .attr("value", "0")
          .text("Не выбрано"));
 	$(POLIGON_SELECT_ID + " option[value=0]").prop("selected", "selected");
+	
+	removePoligonSelectPart(); //task21501 Удаление областей зоны 16.09.2016, GorDS
+	
 	poligons = new Array();
 	poligon = null;
 	poligonId = 0;
@@ -201,14 +207,73 @@ function choosePoligon()
 	// 02.03.2016, GorDS <--
 		
 	removePoligon();
+	removePoligonSelectPart() 				//task21501 Удаление областей зоны 16.09.2016, GorDS
+	addPoligonPartToControl(poligonName); 	//task21501 Добавление областей зоны 16.09.2016, GorDS
 	
+	startDrawing(poligonId);
+	controlsPoligon();
+}
+
+function choosePoligonPart() //task21501 Выбор области зоны 16.09.2016, GorDS
+{
+	var part = parseInt($(POLIGON_PART_ID).val());
+	var j = 0;
+	
+	if (zoneCurrent != null)
+	{
+		for (var i = 1; i < poligons.length; ++i)
+		{
+			if (poligons[i].properties.get('balloonContent') == zoneCurrent)
+			{
+				poligonId = i;
+				j++;
+				
+				if (j == part)
+					break;
+			}
+		}
+		
+		removePoligon();
+		startDrawing(poligonId);	
+	}
+}
+
+function startDrawing(poligonId) //task21501  16.09.2016, GorDS
+{
 	if (poligonId > 0)
 	{
 		poligon = poligons[poligonId];
 		poligon.editor.startDrawing();
 	}
+}
 
-	controlsPoligon();
+function removePoligonSelectPart() //task21501 Удаление областей зоны 16.09.2016, GorDS
+{
+	$(POLIGON_PART_ID + " option").remove();
+	$(POLIGON_PART_ID)
+         .append($("<option></option>")
+         .attr("value", "0")
+         .text("Область зоны"));
+	$(POLIGON_PART_ID + " option[value=0]").prop("selected", "selected");
+}				
+
+function addPoligonPartToControl(zoneName) //task21501 Добавление областей зоны (у зоны может быть несколько областей) 16.09.2016, GorDS
+{
+	var j = 1;
+	
+	for (var i = 1; i < poligons.length; ++i)
+	{
+		if (poligons[i].properties.get('balloonContent') == zoneName)
+		{
+			$(POLIGON_PART_ID)
+				.append($("<option></option>")
+				.attr("value", j)
+				.text(j));
+				
+			j++;
+		}
+	}
+
 }
 
 //Set polygon parameters
@@ -461,7 +526,12 @@ function loadFactoryFromJSONString(jsonString)
 		loadPoligon.properties.set('balloonContent', loadPoligons[i].Name);
 		loadPoligon.options.set('fillColor', loadPoligons[i].Color);
 		loadPoligon.options.set('fillOpacity', 0.2);
-		loadPoligon.options.set('strokeColor', '#000');
+		//task21501 08.09.2016, GorDS -->
+		loadPoligon.options.set('strokeColor', '#000'); 				//Закомментировал
+		//loadPoligon.options.set('strokeColor', loadPoligons[i].Color); 	//Цвет границы зоны = цвету зоны
+		//loadPoligon.options.set('strokeWidth', 0);						//Размер границы зоны
+		//task21501 08.09.2016, GorDS <--
+		
 		map.geoObjects.add(loadPoligon);
 		poligons[i+1] = loadPoligon;
 		poligonNextId++;
@@ -529,7 +599,7 @@ function addZonesToControl(zones) //Вывод всех заводов (Подр
 			 .append($("<option></option>")
 			 .attr("value", j)
 			 .text(zones[i].Name));
-			 
+
 			j ++;
 		}
 	}

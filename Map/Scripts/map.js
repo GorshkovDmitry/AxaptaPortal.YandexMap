@@ -1,5 +1,5 @@
-﻿//Service constants
-const SERVICE_URL = "http://mascon2009:8733/AxaptaProxyService/";
+//Service constants
+const SERVICE_URL = "http://axportalbroker.parkgroup.local:8733/AxaptaProxyService/";
 
 //Vars
 var map = null;
@@ -21,11 +21,28 @@ function init() {
 
     //GorDS, При нажатии на карту - если это не зона - очистить текущую -->
     map.events.add("click", function (event) { 
-        removeSelectedPoligon();
+        removeSelectedPoligon(
+			false //task21501 08.09.2016, GorDS
+		);
     });
     //GorDS, При нажатии на карту - если это не зона - очистить текущую <--
 
 	addSearchControl(); //GorDS, 04.04.2016 Добавление поиска
+}
+
+function geocodeAddress(address) //task21501 08.09.2016, GorDS
+{
+	var myGeocoder = ymaps.geocode(address);
+	
+	myGeocoder.then(
+		function (res) {
+			map.setCenter(res.geoObjects.get(0).geometry.getCoordinates()); //Центрирование
+			setSelectPoligon(res.geoObjects.get(0)); //Нажатие на найденный объект
+		},
+		function (err) {
+			alert('Не найден указанный адрес');
+		}
+	);
 }
 
 function addSearchControl() //GorDS, 04.04.2016 Добавление поиска
@@ -39,29 +56,21 @@ function addSearchControl() //GorDS, 04.04.2016 Добавление поиск�
 		suggestView.events.add('select', function(e){
 			var index = e.get('index');
 			var address = e.get('item').displayName;
-			var myGeocoder = ymaps.geocode(address);
 			
-			myGeocoder.then(
-				function (res) {
-					map.setCenter(res.geoObjects.get(0).geometry.getCoordinates()); //Центрирование
-					setSelectPoligon(res.geoObjects.get(0)); //Нажатие на найденный объект
-				},
-				function (err) {
-					alert('Не найден указанный адрес');
-				}
-			);
-		});
-		
+			geocodeAddress(address);
+		});			
 	});
 }
 
-function removeSelectedPoligon() { //GorDS, Очистка текущей зоны
-    selectPoligon.options.set('strokeWidth', 0.2);
+function removeSelectedPoligon(removeZoneId){ //GorDS, Очистка текущей зоны
+    //selectPoligon.options.set('strokeWidth', 0.2); //task21501 Закомментировал 08.09.2016, GorDS
     
     map.geoObjects.remove(selectPoligon);
     map.geoObjects.add(selectPoligon);
     selectPoligon = null;
-    $("#MainContent_zoneId").val(""); //Очистка Id зоны
+	
+	if (removeZoneId)
+		$("#MainContent_zoneId").val(""); //Очистка Id зоны
 }
 
 function OnMapChangeEvent(jsonBase64String)
@@ -95,43 +104,74 @@ function OnMapChangeEvent(jsonBase64String)
 	var j = 0;
 	var loadPoligon = null;
 	for (j = 0; j < loadPoligons.length; ++j)
-	{
-		loadPoligon = new ymaps.Polygon(ymaps.geometry.Polygon.fromEncodedCoordinates(loadPoligons[j].Coords));
-		loadPoligon.properties.set('balloonContent', loadPoligons[j].Name);
-		loadPoligon.options.set('fillColor', loadPoligons[j].Color);
-		loadPoligon.options.set('fillOpacity', 0.2);
-		loadPoligon.options.set('strokeColor', '#0000FF');
-		map.geoObjects.add(loadPoligon);
-		poligons[j] = loadPoligon;
+	{ 
+		if (loadPoligons[j].Coords != "")
+		{
+			loadPoligon = new ymaps.Polygon(ymaps.geometry.Polygon.fromEncodedCoordinates(loadPoligons[j].Coords));
+			loadPoligon.properties.set('balloonContent', loadPoligons[j].Name);
+			loadPoligon.options.set('fillColor', loadPoligons[j].Color);
+			
+			//task21501 08.09.2016, GorDS -->
+			//loadPoligon.options.set('fillOpacity', 0.2); 					//Закомментировал
+			//loadPoligon.options.set('strokeColor', '#0000FF'); 			//Закомментировал
+			loadPoligon.options.set('fillOpacity', 0);						//Прозрачна
+			loadPoligon.options.set('strokeColor', loadPoligons[i].Color); 	//Цвет границы зоны = цвету зоны
+			loadPoligon.options.set('strokeWidth', 0);						//Размер границы зоны
+			//task21501 08.09.2016, GorDS <--
+			
+			map.geoObjects.add(loadPoligon);
+			poligons[j] = loadPoligon;
+		}
 	}
 
     //GorDS, Передача PoligonId в Hiden field -->
     map.geoObjects.events.add("click", function (event) { 
         var targetPoligon = event.get('target');
         
-        targetPoligon.options.set('strokeWidth', 5);
+		/*task21501 Закомментировал 08.09.2016, GorDS -->
+        targetPoligon.options.set('strokeWidth', 5); 
         poligonId = targetPoligon.properties.get('balloonContent');
         $("#MainContent_zoneId").val(poligonId); //Сохранение Id зоны для передачи
+		task21501 Закомментировал 08.09.2016, GorDS <-- */
 
         if (targetPoligon != selectPoligon) //Для выделения полигона на карте
         {
+			/*task21501 Закомментировал 08.09.2016, GorDS -->
             if (selectPoligon)
             {
                 selectPoligon.options.set('strokeWidth', 0.2);
             }
+			task21501 Закомментировал 08.09.2016, GorDS <-- */
             selectPoligon = targetPoligon;
         }
     });
-
+	
     if ($("#MainContent_zoneId").val() != '') {
         for (var j = 0; j < poligons.length; j++) {
             if (poligons[j].properties.get('balloonContent') == $("#MainContent_zoneId").val()) {
-                poligons[j].events.fire("click");
+		//task21501  08.09.2016, GorDS -->
+                //poligons[j].events.fire("click"); //Закомментировал
+				if ($("#MainContent_unloadAddr").val() != '')
+				{
+					geocodeAddress($("#MainContent_unloadAddr").val());
+				}
+				else
+				{
+					clickOnPoligon(poligons[j]);
+				}
+		//task21501  08.09.2016, GorDS <--
             }
         }
     }
     //GorDS, Передача PoligonId в Hiden field <--
 }  
+
+function clickOnPoligon(clickPoligon) { //task21501 Нажатие на зону 08.09.2016, GorDS
+	var poligonId = clickPoligon.properties.get('balloonContent');
+	$("#MainContent_zoneId").val(poligonId); //Сохранение Id зоны для передачи
+
+	clickPoligon.events.fire("click"); //Стандартное событие - отображение наименования зоны
+}
 
 function collapsElement(id) { //GorDS,  Открытие - закрытие блока
     if (document.getElementById(id).style.display != "none") {
@@ -202,27 +242,30 @@ function setSelectPoligon(point) //GorDS, Выбор полигона, в кот
         //GorDS, Если не был выбрана зона - очищаем текущую выбранную
         if (!clickOnZone)
         {
-            removeSelectedPoligon();
+            removeSelectedPoligon(true);
         }
     });
     Закомментировал */
 
     for (i = 0; i < poligons.length; ++i)
-     {
-      if (poligons[i] != null)
-      {
-       if (poligons[i].geometry.contains(point.geometry.getCoordinates()))
-                {
-                    poligons[i].events.fire("click"); //Эмуляция нажатия на объект
-                    clickOnZone = true;
-                }
-      }
-     }
+    {
+		if (poligons[i] != null)
+		{
+			if (poligons[i].geometry.contains(point.geometry.getCoordinates()))
+			{
+				//task21501 08.09.2016, GorDS -->
+				//poligons[i].events.fire("click"); //Эмуляция нажатия на объект //Закомментировал
+				clickOnPoligon(poligons[i]);
+				//task21501 08.09.2016, GorDS <--
+				clickOnZone = true;
+			}
+		}
+    }
 
     //Если не был выбрана зона - очищаем текущую выбранную
     if (!clickOnZone)
     {
-        removeSelectedPoligon();
+        removeSelectedPoligon(true);
     }
     // 10.03.2016, GorDS <--
 }
